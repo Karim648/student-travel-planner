@@ -7,6 +7,7 @@ import {
 } from "@clerk/nextjs";
 import { Button } from "./ui/button";
 import Link from "next/link";
+import { Heart } from "lucide-react";
 
 export default function Navbar() {
 	return (
@@ -34,6 +35,14 @@ export default function Navbar() {
 						<Link href="/dashboard">
 							<Button variant="outline" className="bg-white">
 								My Conversations
+							</Button>
+						</Link>
+					</li>
+					<li>
+						<Link href="/saved">
+							<Button variant="outline" className="bg-white">
+								<Heart className="mr-2 h-4 w-4" />
+								Saved Items
 							</Button>
 						</Link>
 					</li>
