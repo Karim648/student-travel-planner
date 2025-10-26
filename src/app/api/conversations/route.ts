@@ -12,12 +12,17 @@ export async function GET() {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
+		console.log("🔍 Fetching conversations for userId:", userId);
+
 		// Fetch all conversations for this user
 		const conversations = await db
 			.select()
 			.from(conversationsTable)
 			.where(eq(conversationsTable.userId, userId))
 			.orderBy(desc(conversationsTable.createdAt));
+
+		console.log("📊 Found conversations:", conversations.length);
+		console.log("Conversations:", JSON.stringify(conversations, null, 2));
 
 		return NextResponse.json({
 			success: true,

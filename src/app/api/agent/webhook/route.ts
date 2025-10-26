@@ -39,10 +39,14 @@ export async function POST(req: NextRequest) {
 			JSON.stringify(body, null, 2)
 		);
 
-		// Extract data from the webhook payload structure
-		// Based on ElevenLabs docs: https://elevenlabs.io/docs/product-guides/administration/webhooks
-		const webhookData = body.data; // The actual event data is in the 'data' field
+		// Check if this is a post_call_transcription event
+		if (body.type !== "post_call_transcription") {
+			console.log("ℹ️ Ignoring non-transcription event:", body.type);
+			return NextResponse.json({ ok: true });
+		}
 
+		// Extract the data field from webhook payload
+		const webhookData = body.data;
 		if (!webhookData) {
 			console.error("❌ No data field in webhook payload");
 			return NextResponse.json(
@@ -52,6 +56,7 @@ export async function POST(req: NextRequest) {
 		}
 
 		// Extract userId from conversation_initiation_client_data.custom_llm_extra_body
+		// Based on ElevenLabs webhook documentation structure
 		let userId =
 			webhookData.conversation_initiation_client_data?.custom_llm_extra_body
 				?.userId || null;
@@ -68,13 +73,17 @@ export async function POST(req: NextRequest) {
 
 		console.log("👤 User ID from webhook:", userId || "NOT FOUND");
 
-		// If no userId, log the full payload for debugging but still save with "unknown"
+		// If no userId, log for debugging but still save with "unknown"
 		if (!userId) {
 			console.warn("⚠️ No userId found in webhook payload");
 			console.log("Available fields in data:", Object.keys(webhookData));
 			console.log(
 				"conversation_initiation_client_data:",
-				JSON.stringify(webhookData.conversation_initiation_client_data, null, 2)
+				JSON.stringify(
+					webhookData.conversation_initiation_client_data,
+					null,
+					2
+				)
 			);
 			userId = "unknown";
 		}
@@ -89,9 +98,11 @@ export async function POST(req: NextRequest) {
 			summary = userMessages.substring(0, 500) || "Conversation completed";
 		}
 
-		// If analysis contains a summary, use that instead
+		// If analysis contains a summary, use that instead (note: it's transcript_summary in the docs)
 		if (webhookData.analysis?.transcript_summary) {
 			summary = webhookData.analysis.transcript_summary;
+		} else if (webhookData.analysis?.summary) {
+			summary = webhookData.analysis.summary;
 		}
 
 		// Store the conversation data in the database
@@ -99,7 +110,7 @@ export async function POST(req: NextRequest) {
 			userId,
 			conversationId: webhookData.conversation_id,
 			agentId: webhookData.agent_id,
-			status: webhookData.status || "completed",
+			status: webhookData.status || "done",
 			transcript: webhookData.transcript || [],
 			analysis: webhookData.analysis || {},
 			summary,
