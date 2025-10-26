@@ -17,10 +17,10 @@ export default function Navbar() {
 					<div>
 						<Link href="/" className="group">
 							<div className="flex items-center gap-2">
-								<Home className="h-6 w-6 text-white transition-transform group-hover:scale-110" />
+								{/* <Home className="h-6 w-6 text-white transition-transform group-hover:scale-110" /> */}
 								<div>
 									<h1 className="text-xl font-bold text-white transition-colors group-hover:text-blue-100">
-										BudgetBuddy AI-Travel Planner
+										Cove
 									</h1>
 									<span className="text-xs text-blue-100">
 										Student travel made simple
