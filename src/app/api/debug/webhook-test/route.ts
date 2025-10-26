@@ -5,7 +5,7 @@ import { desc } from "drizzle-orm";
 
 /**
  * GET /api/debug/webhook-test
- * 
+ *
  * Debug endpoint to check:
  * 1. Recent webhook calls
  * 2. Recent conversations in DB
@@ -27,7 +27,9 @@ export async function GET() {
 				totalConversations: recentConversations.length,
 				info: {
 					message: "Check your terminal logs for webhook activity",
-					webhookUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/agent/webhook`,
+					webhookUrl: `${
+						process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+					}/api/agent/webhook`,
 					instructions: [
 						"1. Start a conversation in the app",
 						"2. Complete the conversation",

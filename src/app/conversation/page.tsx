@@ -64,7 +64,10 @@ export default function ConversationPage() {
 				};
 				widget.setAttribute("client-metadata", JSON.stringify(clientMetadata));
 
-				console.log("🔧 Widget configured with client-metadata:", clientMetadata);
+				console.log(
+					"🔧 Widget configured with client-metadata:",
+					clientMetadata
+				);
 				console.log("🆔 Agent ID:", agentId);
 				console.log("👤 User ID:", userId);
 

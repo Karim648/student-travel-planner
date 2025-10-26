@@ -1,32 +1,40 @@
 # Webhook Troubleshooting Guide
 
 ## Problem
+
 Conversations are not being saved to the database after completion. The ElevenLabs dashboard shows "No user ID" in the metadata.
 
 ## Root Cause
+
 The userId was not being properly passed from the client through to the ElevenLabs webhook.
 
 ## Fixes Applied
 
 ### 1. Updated Widget Configuration (`/conversation/page.tsx`)
+
 Changed from `conversation-metadata` to `client-metadata`:
+
 ```typescript
 widget.setAttribute("client-metadata", JSON.stringify({ userId: userId }));
 ```
 
 ### 2. Updated Webhook Handler (`/api/agent/webhook/route.ts`)
+
 Enhanced userId extraction to check multiple locations:
+
 - `metadata.userId`
 - `conversation_initiation_client_data.userId`
 - `conversation_initiation_client_data.custom_llm_extra_body.userId`
 - Other fallback locations
 
 ### 3. Updated Start Call API (`/api/agent/start-call/route.ts`)
+
 Changed to pass metadata correctly for server-initiated calls.
 
 ## Testing the Fix
 
 ### Step 1: Check Webhook URL in ElevenLabs Dashboard
+
 1. Go to https://elevenlabs.io/app/agents
 2. Click on your Travel Guide agent
 3. Go to Settings → Webhooks
@@ -34,6 +42,7 @@ Changed to pass metadata correctly for server-initiated calls.
 5. Make sure "Post-call transcription" is enabled
 
 ### Step 2: Test the Conversation Flow
+
 1. Start your dev server: `pnpm dev`
 2. Start ngrok: `ngrok http 3000`
 3. Update webhook URL in ElevenLabs with your ngrok URL
@@ -46,12 +55,15 @@ Changed to pass metadata correctly for server-initiated calls.
    - `✅ Conversation saved to database!`
 
 ### Step 3: Verify in Database
+
 Visit the debug endpoint:
+
 ```
 http://localhost:3000/api/debug/webhook-test
 ```
 
 Or check dashboard:
+
 ```
 http://localhost:3000/dashboard
 ```
@@ -59,16 +71,21 @@ http://localhost:3000/dashboard
 ## Common Issues
 
 ### Issue: "No user ID" in ElevenLabs Dashboard
+
 **Solution**: The userId is now passed via `client-metadata` which ElevenLabs should include in the webhook payload under `conversation_initiation_client_data`.
 
 ### Issue: Webhook not being called
+
 **Check**:
+
 1. Webhook URL is correct in ElevenLabs dashboard
 2. Ngrok is running and URL matches
 3. Post-call transcription webhook is enabled in ElevenLabs
 
 ### Issue: Conversation saved with userId="unknown"
+
 **Debug**:
+
 1. Check terminal logs for the full webhook payload
 2. Look for `📍 Conversation initiation data:` in logs
 3. Verify the userId is in the payload somewhere
@@ -77,17 +94,21 @@ http://localhost:3000/dashboard
 ## Debugging Commands
 
 ### Check recent conversations:
+
 ```bash
 curl http://localhost:3000/api/debug/webhook-test
 ```
 
 ### Check webhook endpoint is responding:
+
 ```bash
 curl http://localhost:3000/api/agent/webhook
 ```
 
 ### Monitor terminal logs:
+
 Look for these emojis in your terminal:
+
 - 🔔 = Webhook received
 - 👤 = User ID extraction
 - ✅ = Database save success

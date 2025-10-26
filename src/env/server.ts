@@ -8,9 +8,7 @@ export const env = createEnv({
 		ELEVENLABS_API_KEY: z.string().min(1),
 		ELEVENLABS_AGENT_ID: z.string().min(1),
 		CLERK_WEBHOOK_SIGNING_SECRET: z.string().min(1),
-		// Optional: for webhook security
-		ELEVEN_WEBHOOK_SECRET: z.string().optional(),
-		// Google Gemini API for generating travel recommendations
+		ELEVEN_WEBHOOK_SECRET: z.string().min(1),
 		GEMINI_API_KEY: z.string().min(1),
 	},
 	experimental__runtimeEnv: process.env,

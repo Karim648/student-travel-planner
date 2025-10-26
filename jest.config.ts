@@ -16,7 +16,9 @@ const config: Config = {
 		"^@/(.*)$": "<rootDir>/src/$1",
 	},
 	testMatch: ["**/__tests__/**/*.test.ts", "**/__tests__/**/*.test.tsx"],
-	transformIgnorePatterns: ["node_modules/(?!(@clerk)/)"],
+	transformIgnorePatterns: [
+		"node_modules/(?!(@clerk|@t3-oss|drizzle-orm|drizzle-kit)/)",
+	],
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
