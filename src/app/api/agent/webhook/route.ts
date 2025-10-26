@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { conversationsTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { env } from "@/env/server";
+import { createHmac, timingSafeEqual } from "crypto";
 
 export async function GET() {
 	return NextResponse.json({
@@ -19,20 +21,41 @@ export async function POST(req: NextRequest) {
 		const headers = Object.fromEntries(req.headers.entries());
 		console.log("📋 Headers:", JSON.stringify(headers, null, 2));
 
-		// Temporarily disable auth verification for debugging
-		// TODO: Re-enable with proper HMAC verification
-		// const auth = req.headers.get("authorization");
-		// console.log("Auth header:", auth ? "Present" : "Missing");
-		//
-		// if (
-		// 	env.ELEVEN_WEBHOOK_SECRET &&
-		// 	auth !== `Bearer ${env.ELEVEN_WEBHOOK_SECRET}`
-		// ) {
-		// 	console.log("❌ Webhook auth failed");
-		// 	return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		// }
+		// Proper HMAC verification using raw body and signature header
+		const rawBody = await req.text();
+		const sigHeader =
+			req.headers.get("x-elevenlabs-signature") ||
+			req.headers.get("x-eleven-signature") ||
+			req.headers.get("x-signature");
 
-		const body = await req.json();
+		if (!sigHeader) {
+			console.log("❌ Missing signature header");
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
+		try {
+			const computed = createHmac("sha256", env.ELEVEN_WEBHOOK_SECRET)
+				.update(rawBody)
+				.digest("hex");
+
+			const provided = sigHeader.trim().toLowerCase();
+			const expected = computed.toLowerCase();
+
+			// Constant-time compare
+			const valid =
+				provided.length === expected.length &&
+				timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+
+			if (!valid) {
+				console.log("❌ Invalid webhook signature");
+				return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+			}
+		} catch (verr) {
+			console.error("❌ Error verifying signature:", verr);
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
+		const body = JSON.parse(rawBody);
 
 		// Log the webhook payload for debugging
 		console.log(
