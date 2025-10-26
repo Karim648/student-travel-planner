@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ActivityCard } from "@/components/ActivityCard";
@@ -13,18 +13,10 @@ import type {
 import { Loader2, AlertCircle, Home } from "lucide-react";
 
 /**
- * Recommendations Page
- *
- * This page:
- * 1. Accepts a conversationId or summary via URL params
- * 2. Calls the /api/recommendations endpoint
- * 3. Displays the results in a grid layout with different card components
- *
- * URL params:
- * - conversationId: ID of the conversation to get recommendations for
- * - summary: Direct conversation summary text (alternative to conversationId)
+ * Recommendations Page Content Component
+ * Separated to wrap in Suspense boundary for useSearchParams()
  */
-export default function RecommendationsPage() {
+function RecommendationsContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [loading, setLoading] = useState(false);
@@ -227,5 +219,36 @@ export default function RecommendationsPage() {
 				)}
 			</div>
 		</div>
+	);
+}
+
+/**
+ * Recommendations Page
+ *
+ * This page:
+ * 1. Accepts a conversationId or summary via URL params
+ * 2. Calls the /api/recommendations endpoint
+ * 3. Displays the results in a grid layout with different card components
+ *
+ * URL params:
+ * - conversationId: ID of the conversation to get recommendations for
+ * - summary: Direct conversation summary text (alternative to conversationId)
+ *
+ * Wrapped in Suspense boundary to handle useSearchParams() correctly
+ */
+export default function RecommendationsPage() {
+	return (
+		<Suspense
+			fallback={
+				<div className="flex min-h-screen items-center justify-center bg-gray-50">
+					<div className="flex flex-col items-center gap-4">
+						<Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+						<p className="text-lg text-gray-600">Loading recommendations...</p>
+					</div>
+				</div>
+			}
+		>
+			<RecommendationsContent />
+		</Suspense>
 	);
 }
