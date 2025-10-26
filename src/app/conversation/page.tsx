@@ -57,14 +57,16 @@ export default function ConversationPage() {
 					})
 				);
 
-				// Pass userId as metadata so it comes back in the webhook
-				const metadata = {
+				// IMPORTANT: Pass userId in client-metadata
+				// This will be available in the webhook as conversation_initiation_client_data
+				const clientMetadata = {
 					userId: userId,
 				};
-				widget.setAttribute("conversation-metadata", JSON.stringify(metadata));
+				widget.setAttribute("client-metadata", JSON.stringify(clientMetadata));
 
-				console.log("🔧 Widget configured with metadata:", metadata);
+				console.log("🔧 Widget configured with client-metadata:", clientMetadata);
 				console.log("🆔 Agent ID:", agentId);
+				console.log("👤 User ID:", userId);
 
 				widgetContainer.appendChild(widget);
 			}

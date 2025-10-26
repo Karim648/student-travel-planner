@@ -55,40 +55,45 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
-		// Extract userId from conversation_initiation_client_data.custom_llm_extra_body
-		// Based on ElevenLabs webhook documentation structure
-		let userId =
-			webhookData.conversation_initiation_client_data?.custom_llm_extra_body
-				?.userId || null;
+	// Extract userId from various possible locations in the webhook payload
+	// Priority order:
+	// 1. metadata.userId (from API start-call)
+	// 2. conversation_initiation_client_data (from widget client-metadata)
+	// 3. Other fallback locations
+	let userId = webhookData.metadata?.userId || null;
 
-		// Fallback: check other possible locations
-		if (!userId) {
-			userId =
-				webhookData.metadata?.userId ||
-				webhookData.user_id ||
-				webhookData.conversation_initiation_client_data?.dynamic_variables
-					?.userId ||
-				null;
-		}
+	// Check conversation_initiation_client_data for client-metadata from widget
+	if (!userId && webhookData.conversation_initiation_client_data) {
+		const clientData = webhookData.conversation_initiation_client_data;
+		userId =
+			clientData.userId ||
+			clientData.custom_llm_extra_body?.userId ||
+			clientData.metadata?.userId ||
+			clientData.dynamic_variables?.userId ||
+			null;
+	}
 
-		console.log("👤 User ID from webhook:", userId || "NOT FOUND");
+	// Last resort: check top-level fields
+	if (!userId) {
+		userId = webhookData.user_id || null;
+	}
 
-		// If no userId, log for debugging but still save with "unknown"
-		if (!userId) {
-			console.warn("⚠️ No userId found in webhook payload");
-			console.log("Available fields in data:", Object.keys(webhookData));
-			console.log(
-				"conversation_initiation_client_data:",
-				JSON.stringify(
-					webhookData.conversation_initiation_client_data,
-					null,
-					2
-				)
-			);
-			userId = "unknown";
-		}
+	console.log("👤 User ID from webhook:", userId || "NOT FOUND");
+	console.log("📍 Full metadata:", JSON.stringify(webhookData.metadata, null, 2));
+	console.log(
+		"📍 Conversation initiation data:",
+		JSON.stringify(webhookData.conversation_initiation_client_data, null, 2)
+	);
 
-		// Generate a human-readable summary from the transcript
+	// If no userId, log for debugging but still save with "unknown"
+	if (!userId) {
+		console.warn("⚠️ No userId found in webhook payload");
+		console.log("Available fields in data:", Object.keys(webhookData));
+		console.warn(
+			"⚠️ Please check that client-metadata is properly set in the widget or metadata in the API call"
+		);
+		userId = "unknown";
+	}		// Generate a human-readable summary from the transcript
 		let summary = "No summary available";
 		if (webhookData.transcript && Array.isArray(webhookData.transcript)) {
 			const userMessages = webhookData.transcript
