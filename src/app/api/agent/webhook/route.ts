@@ -47,9 +47,23 @@ export async function POST(req: NextRequest) {
 		// - metadata: any custom data you passed (including userId)
 		// - analysis: sentiment, summary, etc. (if enabled)
 
-		// Extract userId from metadata if available
-		const userId = body.metadata?.userId || body.user_id || "unknown";
+		// Extract userId from multiple possible locations
+		const userId =
+			body.metadata?.userId ||
+			body.custom_llm_extra_body?.userId ||
+			body.user_id ||
+			"unknown";
 		console.log("👤 User ID from webhook:", userId);
+
+		// Only save if we have a valid userId (not "unknown")
+		if (userId === "unknown") {
+			console.warn("⚠️ No userId found in webhook payload, skipping save");
+			console.log("Full payload:", JSON.stringify(body, null, 2));
+			return NextResponse.json({
+				ok: true,
+				warning: "No userId found, conversation not saved",
+			});
+		}
 
 		// Generate a human-readable summary from the transcript
 		let summary = "No summary available";
