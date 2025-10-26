@@ -5,6 +5,17 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
 	Loader2,
 	MessageSquare,
 	Calendar,
@@ -13,6 +24,7 @@ import {
 	Clock,
 	Sparkles,
 	ArrowRight,
+	Trash2,
 } from "lucide-react";
 
 interface TranscriptMessage {
@@ -53,6 +65,7 @@ export default function DashboardPage() {
 	const [conversations, setConversations] = useState<Conversation[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [deletingId, setDeletingId] = useState<number | null>(null);
 
 	useEffect(() => {
 		fetchConversations();
@@ -83,6 +96,38 @@ export default function DashboardPage() {
 			);
 		} finally {
 			setLoading(false);
+		}
+	};
+
+	const handleDeleteConversation = async (conversationId: number) => {
+		setDeletingId(conversationId);
+
+		try {
+			const response = await fetch(`/api/conversations/${conversationId}`, {
+				method: "DELETE",
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to delete conversation");
+			}
+
+			const data = await response.json();
+
+			if (data.success) {
+				// Remove the conversation from the local state
+				setConversations((prev) =>
+					prev.filter((conv) => conv.id !== conversationId)
+				);
+			} else {
+				throw new Error(data.error || "Failed to delete conversation");
+			}
+		} catch (err) {
+			console.error("Error deleting conversation:", err);
+			setError(
+				err instanceof Error ? err.message : "Failed to delete conversation"
+			);
+		} finally {
+			setDeletingId(null);
 		}
 	};
 
@@ -366,6 +411,44 @@ export default function DashboardPage() {
 												View Recommendations
 												<ArrowRight className="ml-2 h-4 w-4" />
 											</Button>
+
+											<AlertDialog>
+												<AlertDialogTrigger asChild>
+													<Button
+														variant="outline"
+														className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+														disabled={deletingId === conversation.id}
+													>
+														{deletingId === conversation.id ? (
+															<Loader2 className="h-4 w-4 animate-spin" />
+														) : (
+															<Trash2 className="h-4 w-4" />
+														)}
+													</Button>
+												</AlertDialogTrigger>
+												<AlertDialogContent>
+													<AlertDialogHeader>
+														<AlertDialogTitle>
+															Delete Conversation?
+														</AlertDialogTitle>
+														<AlertDialogDescription>
+															This will permanently delete this conversation and
+															all its data. This action cannot be undone.
+														</AlertDialogDescription>
+													</AlertDialogHeader>
+													<AlertDialogFooter>
+														<AlertDialogCancel>Cancel</AlertDialogCancel>
+														<AlertDialogAction
+															onClick={() =>
+																handleDeleteConversation(conversation.id)
+															}
+															className="bg-red-600 hover:bg-red-700"
+														>
+															Delete
+														</AlertDialogAction>
+													</AlertDialogFooter>
+												</AlertDialogContent>
+											</AlertDialog>
 										</div>
 
 										{conversation.status.toLowerCase() !== "completed" && (

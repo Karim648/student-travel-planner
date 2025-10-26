@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { conversationsTable } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function GET() {
 	return NextResponse.json({
@@ -115,6 +116,8 @@ export async function POST(req: NextRequest) {
 
 		// Store the conversation data in the database
 		try {
+			// Use onConflictDoUpdate to handle duplicate conversationId
+			// This will update the existing record if conversationId already exists
 			const result = await db
 				.insert(conversationsTable)
 				.values({
@@ -125,6 +128,18 @@ export async function POST(req: NextRequest) {
 					transcript: webhookData.transcript || [],
 					analysis: webhookData.analysis || {},
 					summary,
+				})
+				.onConflictDoUpdate({
+					target: conversationsTable.conversationId,
+					set: {
+						userId,
+						agentId: webhookData.agent_id,
+						status: webhookData.status || "completed",
+						transcript: webhookData.transcript || [],
+						analysis: webhookData.analysis || {},
+						summary,
+						updatedAt: new Date(),
+					},
 				})
 				.returning();
 
