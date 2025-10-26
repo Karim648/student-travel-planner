@@ -22,14 +22,25 @@ export async function POST() {
 			);
 		}
 
-		// Get a signed URL for the conversational AI agent
+		// Get a signed URL for the conversational AI agent with custom metadata
+		// Pass userId in custom_llm_extra_body which will be available in webhook payload
 		const response = await fetch(
-			`https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${env.ELEVENLABS_AGENT_ID}`,
+			`https://api.elevenlabs.io/v1/convai/conversation/get_signed_url`,
 			{
-				method: "GET",
+				method: "POST",
 				headers: {
 					"xi-api-key": env.ELEVENLABS_API_KEY,
+					"Content-Type": "application/json",
 				},
+				body: JSON.stringify({
+					agent_id: env.ELEVENLABS_AGENT_ID,
+					// Custom data that will appear in conversation_initiation_client_data
+					overrides: {
+						custom_llm_extra_body: {
+							userId: userId,
+						},
+					},
+				}),
 			}
 		);
 
@@ -43,14 +54,9 @@ export async function POST() {
 
 		const data = await response.json();
 
-		// Append userId to the signed URL for tracking in webhook
-		const signedUrlWithMetadata = `${
-			data.signed_url
-		}&metadata=${encodeURIComponent(JSON.stringify({ userId }))}`;
-
 		return NextResponse.json({
 			success: true,
-			signedUrl: signedUrlWithMetadata,
+			signedUrl: data.signed_url,
 		});
 	} catch (error) {
 		console.error("ElevenLabs error:", error);
