@@ -26,7 +26,10 @@ export default function Home() {
 					<SignedOut>
 						<div className="mb-12 flex flex-wrap justify-center gap-4">
 							<Link href="/sign-in">
-								<Button size="lg" className="px-8 py-6 text-lg bg-blue-600 hover:bg-blue-700">
+								<Button
+									size="lg"
+									className="px-8 py-6 text-lg bg-blue-600 hover:bg-blue-700"
+								>
 									<Sparkles className="mr-2 h-5 w-5" />
 									Get Started
 								</Button>
@@ -46,7 +49,10 @@ export default function Home() {
 					<SignedIn>
 						<div className="mb-12 flex flex-wrap justify-center gap-4">
 							<Link href="/conversation">
-								<Button size="lg" className="px-8 py-6 text-lg bg-blue-600 hover:bg-blue-700">
+								<Button
+									size="lg"
+									className="px-8 py-6 text-lg bg-blue-600 hover:bg-blue-700"
+								>
 									<MessageSquarePlus className="mr-2 h-5 w-5" />
 									Start New Chat
 								</Button>

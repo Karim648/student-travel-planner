@@ -6,7 +6,7 @@ import { ChevronRight, Home } from "lucide-react";
 
 /**
  * Breadcrumb Navigation Component
- * 
+ *
  * Displays the current page location in a hierarchy
  */
 export function Breadcrumb() {

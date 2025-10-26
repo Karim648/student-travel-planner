@@ -210,200 +210,203 @@ export default function DashboardPage() {
 								</p>
 							</div>
 							<Button
-							onClick={handleStartNewConversation}
-							size="lg"
-							className="bg-blue-600 hover:bg-blue-700"
-						>
-							<MessageSquare className="mr-2 h-5 w-5" />
-							New Conversation
-						</Button>
-					</div>
-				</div>
-
-				{/* Stats Bar */}
-				<div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-					<div className="rounded-lg bg-white p-6 shadow-sm">
-						<div className="flex items-center justify-between">
-							<div>
-								<p className="text-sm font-medium text-gray-600">
-									Total Conversations
-								</p>
-								<p className="mt-2 text-3xl font-bold text-gray-900">
-									{conversations.length}
-								</p>
-							</div>
-							<MessageSquare className="h-10 w-10 text-blue-500" />
-						</div>
-					</div>
-					<div className="rounded-lg bg-white p-6 shadow-sm">
-						<div className="flex items-center justify-between">
-							<div>
-								<p className="text-sm font-medium text-gray-600">Completed</p>
-								<p className="mt-2 text-3xl font-bold text-green-600">
-									{
-										conversations.filter(
-											(c) => c.status.toLowerCase() === "completed"
-										).length
-									}
-								</p>
-							</div>
-							<CheckCircle className="h-10 w-10 text-green-500" />
-						</div>
-					</div>
-					<div className="rounded-lg bg-white p-6 shadow-sm">
-						<div className="flex items-center justify-between">
-							<div>
-								<p className="text-sm font-medium text-gray-600">In Progress</p>
-								<p className="mt-2 text-3xl font-bold text-yellow-600">
-									{
-										conversations.filter(
-											(c) => c.status.toLowerCase() === "in-progress"
-										).length
-									}
-								</p>
-							</div>
-							<Clock className="h-10 w-10 text-yellow-500" />
-						</div>
-					</div>
-				</div>
-
-				{/* Conversations List */}
-				{conversations.length === 0 ? (
-					<div className="rounded-lg bg-white p-12 text-center shadow-lg">
-						<MessageSquare className="mx-auto mb-4 h-16 w-16 text-gray-400" />
-						<h2 className="mb-2 text-2xl font-semibold text-gray-900">
-							No conversations yet
-						</h2>
-						<p className="mb-6 text-gray-600">
-							Start your first conversation with our AI travel assistant
-						</p>
-						<Button
-							onClick={handleStartNewConversation}
-							size="lg"
-							className="bg-blue-600 hover:bg-blue-700"
-						>
-							<Sparkles className="mr-2 h-5 w-5" />
-							Start Planning Your Trip
-						</Button>
-					</div>
-				) : (
-					<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-						{conversations.map((conversation) => (
-							<div
-								key={conversation.id}
-								className="overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg"
+								onClick={handleStartNewConversation}
+								size="lg"
+								className="bg-blue-600 hover:bg-blue-700"
 							>
-								{/* Card Header */}
-								<div className="border-b border-gray-200 bg-linear-to-r from-blue-500 to-indigo-600 p-6">
-									<div className="flex items-start justify-between">
-										<div className="flex items-center gap-3">
-											{getStatusIcon(conversation.status)}
-											<div>
-												<h3 className="text-lg font-semibold text-white">
-													Conversation
-												</h3>
-												<p className="text-sm text-blue-100">
-													ID: {conversation.conversationId.substring(0, 12)}...
-												</p>
-											</div>
-										</div>
-										<span
-											className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusColor(
-												conversation.status
-											)}`}
-										>
-											{conversation.status}
-										</span>
-									</div>
+								<MessageSquare className="mr-2 h-5 w-5" />
+								New Conversation
+							</Button>
+						</div>
+					</div>
+
+					{/* Stats Bar */}
+					<div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+						<div className="rounded-lg bg-white p-6 shadow-sm">
+							<div className="flex items-center justify-between">
+								<div>
+									<p className="text-sm font-medium text-gray-600">
+										Total Conversations
+									</p>
+									<p className="mt-2 text-3xl font-bold text-gray-900">
+										{conversations.length}
+									</p>
 								</div>
+								<MessageSquare className="h-10 w-10 text-blue-500" />
+							</div>
+						</div>
+						<div className="rounded-lg bg-white p-6 shadow-sm">
+							<div className="flex items-center justify-between">
+								<div>
+									<p className="text-sm font-medium text-gray-600">Completed</p>
+									<p className="mt-2 text-3xl font-bold text-green-600">
+										{
+											conversations.filter(
+												(c) => c.status.toLowerCase() === "completed"
+											).length
+										}
+									</p>
+								</div>
+								<CheckCircle className="h-10 w-10 text-green-500" />
+							</div>
+						</div>
+						<div className="rounded-lg bg-white p-6 shadow-sm">
+							<div className="flex items-center justify-between">
+								<div>
+									<p className="text-sm font-medium text-gray-600">
+										In Progress
+									</p>
+									<p className="mt-2 text-3xl font-bold text-yellow-600">
+										{
+											conversations.filter(
+												(c) => c.status.toLowerCase() === "in-progress"
+											).length
+										}
+									</p>
+								</div>
+								<Clock className="h-10 w-10 text-yellow-500" />
+							</div>
+						</div>
+					</div>
 
-								{/* Card Body */}
-								<div className="p-6">
-									{/* Date */}
-									<div className="mb-4 flex items-center gap-2 text-sm text-gray-600">
-										<Calendar className="h-4 w-4" />
-										<span>{formatDate(conversation.createdAt)}</span>
+					{/* Conversations List */}
+					{conversations.length === 0 ? (
+						<div className="rounded-lg bg-white p-12 text-center shadow-lg">
+							<MessageSquare className="mx-auto mb-4 h-16 w-16 text-gray-400" />
+							<h2 className="mb-2 text-2xl font-semibold text-gray-900">
+								No conversations yet
+							</h2>
+							<p className="mb-6 text-gray-600">
+								Start your first conversation with our AI travel assistant
+							</p>
+							<Button
+								onClick={handleStartNewConversation}
+								size="lg"
+								className="bg-blue-600 hover:bg-blue-700"
+							>
+								<Sparkles className="mr-2 h-5 w-5" />
+								Start Planning Your Trip
+							</Button>
+						</div>
+					) : (
+						<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+							{conversations.map((conversation) => (
+								<div
+									key={conversation.id}
+									className="overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg"
+								>
+									{/* Card Header */}
+									<div className="border-b border-gray-200 bg-linear-to-r from-blue-500 to-indigo-600 p-6">
+										<div className="flex items-start justify-between">
+											<div className="flex items-center gap-3">
+												{getStatusIcon(conversation.status)}
+												<div>
+													<h3 className="text-lg font-semibold text-white">
+														Conversation
+													</h3>
+													<p className="text-sm text-blue-100">
+														ID: {conversation.conversationId.substring(0, 12)}
+														...
+													</p>
+												</div>
+											</div>
+											<span
+												className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusColor(
+													conversation.status
+												)}`}
+											>
+												{conversation.status}
+											</span>
+										</div>
 									</div>
 
-									{/* Summary */}
-									<div className="mb-6">
-										<h4 className="mb-2 text-sm font-semibold text-gray-700">
-											Summary
-										</h4>
-										<p className="text-gray-600 line-clamp-3">
-											{getSummaryText(conversation)}
-										</p>
+									{/* Card Body */}
+									<div className="p-6">
+										{/* Date */}
+										<div className="mb-4 flex items-center gap-2 text-sm text-gray-600">
+											<Calendar className="h-4 w-4" />
+											<span>{formatDate(conversation.createdAt)}</span>
+										</div>
+
+										{/* Summary */}
+										<div className="mb-6">
+											<h4 className="mb-2 text-sm font-semibold text-gray-700">
+												Summary
+											</h4>
+											<p className="text-gray-600 line-clamp-3">
+												{getSummaryText(conversation)}
+											</p>
+										</div>
+
+										{/* Sentiment Badge (if available) */}
+										{conversation.analysis &&
+											typeof conversation.analysis === "object" &&
+											"sentiment" in conversation.analysis && (
+												<div className="mb-4">
+													<span className="inline-flex items-center rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-800">
+														<Sparkles className="mr-1 h-3 w-3" />
+														Sentiment:{" "}
+														{String(
+															conversation.analysis.sentiment
+														).toUpperCase()}
+													</span>
+												</div>
+											)}
+
+										{/* Action Buttons */}
+										<div className="flex gap-3">
+											<Button
+												onClick={() => handleViewRecommendations(conversation)}
+												disabled={
+													conversation.status.toLowerCase() !== "completed"
+												}
+												className="flex-1 bg-blue-600 hover:bg-blue-700"
+											>
+												<Sparkles className="mr-2 h-4 w-4" />
+												View Recommendations
+												<ArrowRight className="ml-2 h-4 w-4" />
+											</Button>
+										</div>
+
+										{conversation.status.toLowerCase() !== "completed" && (
+											<p className="mt-3 text-center text-xs text-gray-500">
+												Recommendations available when conversation is completed
+											</p>
+										)}
 									</div>
 
-									{/* Sentiment Badge (if available) */}
-									{conversation.analysis &&
-										typeof conversation.analysis === "object" &&
-										"sentiment" in conversation.analysis && (
-											<div className="mb-4">
-												<span className="inline-flex items-center rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-800">
-													<Sparkles className="mr-1 h-3 w-3" />
-													Sentiment:{" "}
-													{String(
-														conversation.analysis.sentiment
-													).toUpperCase()}
-												</span>
+									{/* Transcript Preview */}
+									{conversation.transcript &&
+										Array.isArray(conversation.transcript) &&
+										conversation.transcript.length > 0 && (
+											<div className="border-t border-gray-200 bg-gray-50 p-4">
+												<p className="text-xs font-semibold text-gray-600">
+													Transcript Preview
+												</p>
+												<div className="mt-2 space-y-1 text-xs text-gray-600">
+													{conversation.transcript
+														.slice(0, 2)
+														.map((msg: TranscriptMessage, idx: number) => (
+															<div key={idx} className="line-clamp-1">
+																<span className="font-semibold capitalize">
+																	{msg.role}:
+																</span>{" "}
+																{msg.message}
+															</div>
+														))}
+													{conversation.transcript.length > 2 && (
+														<p className="text-gray-500">
+															+{conversation.transcript.length - 2} more
+															messages...
+														</p>
+													)}
+												</div>
 											</div>
 										)}
-
-									{/* Action Buttons */}
-									<div className="flex gap-3">
-										<Button
-											onClick={() => handleViewRecommendations(conversation)}
-											disabled={
-												conversation.status.toLowerCase() !== "completed"
-											}
-											className="flex-1 bg-blue-600 hover:bg-blue-700"
-										>
-											<Sparkles className="mr-2 h-4 w-4" />
-											View Recommendations
-											<ArrowRight className="ml-2 h-4 w-4" />
-										</Button>
-									</div>
-
-									{conversation.status.toLowerCase() !== "completed" && (
-										<p className="mt-3 text-center text-xs text-gray-500">
-											Recommendations available when conversation is completed
-										</p>
-									)}
 								</div>
-
-								{/* Transcript Preview */}
-								{conversation.transcript &&
-									Array.isArray(conversation.transcript) &&
-									conversation.transcript.length > 0 && (
-										<div className="border-t border-gray-200 bg-gray-50 p-4">
-											<p className="text-xs font-semibold text-gray-600">
-												Transcript Preview
-											</p>
-											<div className="mt-2 space-y-1 text-xs text-gray-600">
-												{conversation.transcript
-													.slice(0, 2)
-													.map((msg: TranscriptMessage, idx: number) => (
-														<div key={idx} className="line-clamp-1">
-															<span className="font-semibold capitalize">
-																{msg.role}:
-															</span>{" "}
-															{msg.message}
-														</div>
-													))}
-												{conversation.transcript.length > 2 && (
-													<p className="text-gray-500">
-														+{conversation.transcript.length - 2} more
-														messages...
-													</p>
-												)}
-											</div>
-										</div>
-									)}
-							</div>
-						))}
-					</div>
-				)}
+							))}
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
