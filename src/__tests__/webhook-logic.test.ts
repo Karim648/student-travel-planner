@@ -1,6 +1,6 @@
 /**
  * Webhook Logic Unit Tests
- * 
+ *
  * Tests the core webhook logic without full route imports
  * This avoids ESM module import issues while still testing the critical functionality
  */
@@ -13,14 +13,15 @@ describe("Webhook UserId Extraction Logic", () => {
 	// Helper function that mimics the webhook's userId extraction logic
 	function extractUserId(payload: any): string {
 		const data = payload.data;
-		
+
 		// Try multiple locations
-		const userId = 
+		const userId =
 			data?.metadata?.userId ||
 			data?.conversation_initiation_client_data?.userId ||
-			data?.conversation_initiation_client_data?.custom_llm_extra_body?.userId ||
+			data?.conversation_initiation_client_data?.custom_llm_extra_body
+				?.userId ||
 			"unknown";
-			
+
 		return userId;
 	}
 
@@ -106,23 +107,23 @@ describe("Webhook Summary Generation Logic", () => {
 	// Helper function that mimics the webhook's summary generation
 	function generateSummary(payload: any): string {
 		const data = payload.data;
-		
+
 		// Try to get summary from analysis first
 		if (data?.analysis?.transcript_summary) {
 			return data.analysis.transcript_summary;
 		}
-		
+
 		// Generate from transcript
 		const transcript = data?.transcript || [];
 		const userMessages = transcript
 			.filter((msg: any) => msg.role === "user")
 			.map((msg: any) => msg.message)
 			.join(" ");
-			
+
 		if (userMessages.trim()) {
 			return userMessages.trim().slice(0, 200); // Limit to 200 chars
 		}
-		
+
 		return "Conversation completed";
 	}
 
@@ -188,9 +189,7 @@ describe("Webhook Summary Generation Logic", () => {
 		const longMessage = "a".repeat(300);
 		const payload = {
 			data: {
-				transcript: [
-					{ role: "user", message: longMessage },
-				],
+				transcript: [{ role: "user", message: longMessage }],
 			},
 		};
 
@@ -226,15 +225,15 @@ describe("Webhook Payload Validation", () => {
 		if (!payload) {
 			return { valid: false, error: "Payload is missing" };
 		}
-		
+
 		if (!payload.data) {
 			return { valid: false, error: "Data field is missing" };
 		}
-		
+
 		if (!payload.data.conversation_id) {
 			return { valid: false, error: "Conversation ID is missing" };
 		}
-		
+
 		return { valid: true };
 	}
 
@@ -299,12 +298,12 @@ describe("Complete Webhook Processing Flow", () => {
 		}
 
 		// Extract data
-		const userId = 
+		const userId =
 			payload.data.metadata?.userId ||
 			payload.data.conversation_initiation_client_data?.userId ||
 			"unknown";
 
-		const summary = 
+		const summary =
 			payload.data.analysis?.transcript_summary ||
 			payload.data.transcript
 				?.filter((msg: any) => msg.role === "user")
@@ -344,12 +343,14 @@ describe("Complete Webhook Processing Flow", () => {
 		};
 
 		const result = processWebhook(payload);
-		
+
 		expect(result.success).toBe(true);
 		expect(result.conversationData).toBeDefined();
 		expect(result.conversationData?.userId).toBe("user_clerk_abc");
 		expect(result.conversationData?.conversationId).toBe("conv_complete_123");
-		expect(result.conversationData?.summary).toBe("User planning trip to Tokyo");
+		expect(result.conversationData?.summary).toBe(
+			"User planning trip to Tokyo"
+		);
 	});
 
 	it("should handle missing userId gracefully", () => {
@@ -362,7 +363,7 @@ describe("Complete Webhook Processing Flow", () => {
 		};
 
 		const result = processWebhook(payload);
-		
+
 		expect(result.success).toBe(true);
 		expect(result.conversationData?.userId).toBe("unknown");
 	});
@@ -376,7 +377,7 @@ describe("Complete Webhook Processing Flow", () => {
 		};
 
 		const result = processWebhook(payload);
-		
+
 		expect(result.success).toBe(true);
 		expect(result.conversationData).toBeUndefined();
 	});

@@ -7,7 +7,14 @@ import { ActivityCard } from "@/components/ActivityCard";
 import { HotelCard } from "@/components/HotelCard";
 import { RestaurantCard } from "@/components/RestaurantCard";
 import type { Activity, Hotel, Restaurant } from "@/types/recommendations";
-import { Loader2, AlertCircle, Home, Heart, ListFilter } from "lucide-react";
+import {
+	Loader2,
+	AlertCircle,
+	Heart,
+	ListFilter,
+	MessageSquarePlus,
+	LayoutDashboard,
+} from "lucide-react";
 
 interface SavedItem {
 	id: number;
@@ -97,9 +104,9 @@ export default function SavedItemsPage() {
 	return (
 		<div className="min-h-screen bg-gray-50 p-8">
 			<div className="mx-auto max-w-7xl">
-				{/* Header */}
+				{/* Header with Navigation */}
 				<div className="mb-8">
-					<div className="mb-4 flex items-center justify-between">
+					<div className="mb-4 flex flex-wrap items-center justify-between gap-4">
 						<div>
 							<div className="flex items-center gap-3">
 								<Heart className="h-8 w-8 fill-red-500 text-red-500" />
@@ -111,14 +118,24 @@ export default function SavedItemsPage() {
 								Your favorite activities, hotels, and restaurants
 							</p>
 						</div>
-						<Button
-							onClick={() => router.push("/dashboard")}
-							variant="outline"
-							size="lg"
-						>
-							<Home className="mr-2 h-4 w-4" />
-							Back to Dashboard
-						</Button>
+						<div className="flex gap-3">
+							<Button
+								onClick={() => router.push("/dashboard")}
+								variant="outline"
+								size="lg"
+							>
+								<LayoutDashboard className="mr-2 h-4 w-4" />
+								Dashboard
+							</Button>
+							<Button
+								onClick={() => router.push("/conversation")}
+								size="lg"
+								className="bg-blue-600 hover:bg-blue-700"
+							>
+								<MessageSquarePlus className="mr-2 h-4 w-4" />
+								New Chat
+							</Button>
+						</div>
 					</div>
 
 					{/* Stats */}

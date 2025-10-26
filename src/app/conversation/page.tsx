@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { LayoutDashboard, Heart, Home } from "lucide-react";
 
 export default function ConversationPage() {
 	const [agentId, setAgentId] = useState<string>("");
@@ -124,14 +125,32 @@ export default function ConversationPage() {
 						className="flex justify-center"
 					></div>
 
-					<div className="flex flex-col gap-4">
+					<div className="flex flex-col gap-3 sm:flex-row">
+						<Button
+							onClick={() => router.push("/")}
+							variant="outline"
+							size="lg"
+							className="flex-1 text-lg"
+						>
+							<Home className="mr-2 h-5 w-5" />
+							Home
+						</Button>
 						<Button
 							onClick={() => router.push("/dashboard")}
 							variant="outline"
 							size="lg"
-							className="w-full text-lg"
+							className="flex-1 text-lg"
 						>
-							View My Conversations
+							<LayoutDashboard className="mr-2 h-5 w-5" />
+							My Conversations
+						</Button>
+						<Button
+							onClick={() => router.push("/saved")}
+							size="lg"
+							className="flex-1 bg-pink-600 text-lg hover:bg-pink-700"
+						>
+							<Heart className="mr-2 h-5 w-5" />
+							Saved Items
 						</Button>
 					</div>
 

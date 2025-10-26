@@ -9,6 +9,7 @@ We have comprehensive automated tests that verify the webhook functionality work
 ## Test Suite Overview
 
 ### 1. Webhook Logic Tests (`webhook-logic.test.ts`)
+
 - **Purpose**: Fast, isolated tests of core webhook logic
 - **What they test**:
   - ✅ UserId extraction from different payload locations
@@ -20,6 +21,7 @@ We have comprehensive automated tests that verify the webhook functionality work
 - **Speed**: ~150ms
 
 ### 2. Integration Tests (`integration.test.ts`)
+
 - **Purpose**: Test actual API endpoints with mocked database
 - **What they test**:
   - ✅ Webhook endpoint accepts and processes ElevenLabs payloads
@@ -31,33 +33,40 @@ We have comprehensive automated tests that verify the webhook functionality work
 - **Speed**: ~250ms
 
 ### 3. Recommendations Tests (`recommendations-logic.test.ts`)
+
 - **Purpose**: Test AI recommendation processing
 - **Tests**: 12 passing tests
 
 ## Running Tests
 
 ### Run All Tests (Recommended)
+
 ```bash
 pnpm test
 ```
+
 **Expected output**: `Test Suites: 3 passed, Tests: 49 passed`
 
 ### Run Only Webhook Tests
+
 ```bash
 pnpm test webhook
 ```
 
 ### Run Webhook Logic Tests Only
+
 ```bash
 pnpm test webhook-logic
 ```
 
 ### Run Integration Tests Only
+
 ```bash
 pnpm test integration
 ```
 
 ### Run Tests in Watch Mode (for development)
+
 ```bash
 pnpm test --watch
 ```
@@ -65,6 +74,7 @@ pnpm test --watch
 ## No Setup Required!
 
 All tests run with mocked dependencies - **no database setup needed**. Just run:
+
 ```bash
 pnpm test
 ```
@@ -87,12 +97,15 @@ The tests simulate webhook payloads and verify the logic works correctly.
 ## How to Verify Webhook Works
 
 ### Option 1: Automated Tests (Recommended)
+
 ```bash
 pnpm test
 ```
+
 If all 49 tests pass, your webhook logic is **guaranteed** to work correctly! ✅
 
 ### Option 2: Manual Testing (if you want to double-check)
+
 1. Start your dev server: `pnpm dev`
 2. Start ngrok: `ngrok http 3000`
 3. Configure webhook URL in ElevenLabs dashboard
@@ -100,7 +113,7 @@ If all 49 tests pass, your webhook logic is **guaranteed** to work correctly! �
 5. Check terminal logs for "✅ Conversation saved to database!"
 6. Visit `/dashboard` to see the conversation
 
-But honestly, **the automated tests already verify all this** 🎉  
+But honestly, **the automated tests already verify all this** 🎉
 
 ## Next Steps
 
@@ -111,6 +124,7 @@ But honestly, **the automated tests already verify all this** 🎉
 ## Conclusion
 
 With these automated tests, you can **confidently verify** that:
+
 - ✅ Webhooks save conversations to the database
 - ✅ UserId is correctly extracted and associated
 - ✅ Summaries are generated from transcripts
@@ -123,9 +137,9 @@ With these automated tests, you can **confidently verify** that:
 
 ## Test Files Reference
 
-| File | Purpose | Tests |
-|------|---------|-------|
-| `src/__tests__/webhook-logic.test.ts` | Webhook core logic (userId extraction, summary generation) | 21 |
-| `src/app/api/__tests__/integration.test.ts` | API endpoints and database integration | 16 |
-| `src/app/api/__tests__/recommendations-logic.test.ts` | AI recommendations JSON processing | 12 |
-| **Total** | **Complete test coverage** | **49** |
+| File                                                  | Purpose                                                    | Tests  |
+| ----------------------------------------------------- | ---------------------------------------------------------- | ------ |
+| `src/__tests__/webhook-logic.test.ts`                 | Webhook core logic (userId extraction, summary generation) | 21     |
+| `src/app/api/__tests__/integration.test.ts`           | API endpoints and database integration                     | 16     |
+| `src/app/api/__tests__/recommendations-logic.test.ts` | AI recommendations JSON processing                         | 12     |
+| **Total**                                             | **Complete test coverage**                                 | **49** |

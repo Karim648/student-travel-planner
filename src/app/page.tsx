@@ -2,6 +2,12 @@ import Navbar from "@/components/Navbar";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import {
+	MessageSquarePlus,
+	LayoutDashboard,
+	Heart,
+	Sparkles,
+} from "lucide-react";
 
 export default function Home() {
 	return (
@@ -18,9 +24,10 @@ export default function Home() {
 					</p>
 
 					<SignedOut>
-						<div className="mb-12 flex justify-center gap-4">
+						<div className="mb-12 flex flex-wrap justify-center gap-4">
 							<Link href="/sign-in">
-								<Button size="lg" className="px-8 py-6 text-lg">
+								<Button size="lg" className="px-8 py-6 text-lg bg-blue-600 hover:bg-blue-700">
+									<Sparkles className="mr-2 h-5 w-5" />
 									Get Started
 								</Button>
 							</Link>
@@ -28,28 +35,40 @@ export default function Home() {
 								<Button
 									size="lg"
 									variant="outline"
-									className="px-8 py-6 text-lg"
+									className="px-8 py-6 text-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-50"
 								>
-									Sign Up
+									Sign Up Free
 								</Button>
 							</Link>
 						</div>
 					</SignedOut>
 
 					<SignedIn>
-						<div className="mb-12 flex justify-center gap-4">
+						<div className="mb-12 flex flex-wrap justify-center gap-4">
 							<Link href="/conversation">
-								<Button size="lg" className="px-8 py-6 text-lg">
-									Start New Conversation
+								<Button size="lg" className="px-8 py-6 text-lg bg-blue-600 hover:bg-blue-700">
+									<MessageSquarePlus className="mr-2 h-5 w-5" />
+									Start New Chat
 								</Button>
 							</Link>
 							<Link href="/dashboard">
 								<Button
 									size="lg"
 									variant="outline"
-									className="px-8 py-6 text-lg"
+									className="px-8 py-6 text-lg border-2"
 								>
-									View My Conversations
+									<LayoutDashboard className="mr-2 h-5 w-5" />
+									My Conversations
+								</Button>
+							</Link>
+							<Link href="/saved">
+								<Button
+									size="lg"
+									variant="outline"
+									className="px-8 py-6 text-lg border-2 border-pink-600 text-pink-600 hover:bg-pink-50"
+								>
+									<Heart className="mr-2 h-5 w-5" />
+									Saved Items
 								</Button>
 							</Link>
 						</div>

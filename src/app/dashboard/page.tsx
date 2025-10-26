@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import {
 	Loader2,
 	MessageSquare,
@@ -193,20 +194,22 @@ export default function DashboardPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 p-8">
-			<div className="mx-auto max-w-7xl">
-				{/* Header */}
-				<div className="mb-8">
-					<div className="flex items-center justify-between">
-						<div>
-							<h1 className="text-4xl font-bold text-gray-900">
-								My Conversations
-							</h1>
-							<p className="mt-2 text-lg text-gray-600">
-								View and manage your travel planning conversations
-							</p>
-						</div>
-						<Button
+		<div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
+			<Breadcrumb />
+			<div className="p-8">
+				<div className="mx-auto max-w-7xl">
+					{/* Header */}
+					<div className="mb-8">
+						<div className="flex items-center justify-between">
+							<div>
+								<h1 className="text-4xl font-bold text-gray-900">
+									My Conversations
+								</h1>
+								<p className="mt-2 text-lg text-gray-600">
+									View and manage your travel planning conversations
+								</p>
+							</div>
+							<Button
 							onClick={handleStartNewConversation}
 							size="lg"
 							className="bg-blue-600 hover:bg-blue-700"
@@ -401,6 +404,7 @@ export default function DashboardPage() {
 						))}
 					</div>
 				)}
+				</div>
 			</div>
 		</div>
 	);

@@ -13,7 +13,13 @@ import type {
 	Hotel,
 	Restaurant,
 } from "@/types/recommendations";
-import { Loader2, AlertCircle, Home } from "lucide-react";
+import {
+	Loader2,
+	AlertCircle,
+	ArrowLeft,
+	Heart,
+	MessageSquarePlus,
+} from "lucide-react";
 
 /**
  * Recommendations Page Content Component
@@ -150,9 +156,9 @@ function RecommendationsContent() {
 	return (
 		<div className="min-h-screen bg-gray-50 p-8">
 			<div className="mx-auto max-w-7xl">
-				{/* Header */}
+				{/* Header with Navigation */}
 				<div className="mb-8">
-					<div className="mb-4 flex items-center justify-between">
+					<div className="mb-4 flex flex-wrap items-center justify-between gap-4">
 						<div>
 							<h1 className="text-4xl font-bold text-gray-900">
 								Travel Recommendations
@@ -161,14 +167,33 @@ function RecommendationsContent() {
 								Personalized suggestions based on your conversation
 							</p>
 						</div>
-						<Button
-							onClick={() => router.push("/dashboard")}
-							variant="outline"
-							size="lg"
-						>
-							<Home className="mr-2 h-4 w-4" />
-							Back to Dashboard
-						</Button>
+						<div className="flex gap-3">
+							<Button
+								onClick={() => router.push("/dashboard")}
+								variant="outline"
+								size="lg"
+							>
+								<ArrowLeft className="mr-2 h-4 w-4" />
+								Dashboard
+							</Button>
+							<Button
+								onClick={() => router.push("/saved")}
+								variant="outline"
+								size="lg"
+								className="border-pink-300 text-pink-600 hover:bg-pink-50"
+							>
+								<Heart className="mr-2 h-4 w-4" />
+								Saved Items
+							</Button>
+							<Button
+								onClick={() => router.push("/conversation")}
+								size="lg"
+								className="bg-blue-600 hover:bg-blue-700"
+							>
+								<MessageSquarePlus className="mr-2 h-4 w-4" />
+								New Chat
+							</Button>
+						</div>
 					</div>
 
 					{/* Get Recommendations Button - shows if no recommendations yet */}
