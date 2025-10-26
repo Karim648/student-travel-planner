@@ -1,8 +1,14 @@
+"use client";
+
 import { Hotel } from "@/types/recommendations";
-import { MapPin, Star, DollarSign, CheckCircle } from "lucide-react";
+import { MapPin, Star, DollarSign, CheckCircle, Heart } from "lucide-react";
+import { useState } from "react";
 
 interface HotelCardProps {
 	hotel: Hotel;
+	savedItemId?: number;
+	onSave?: (hotel: Hotel) => Promise<void>;
+	onUnsave?: (savedItemId: number) => Promise<void>;
 }
 
 /**
@@ -11,9 +17,47 @@ interface HotelCardProps {
  * Displays a single hotel recommendation
  * Shows: image, name, description, price, rating, location, amenities
  */
-export function HotelCard({ hotel }: HotelCardProps) {
+export function HotelCard({
+	hotel,
+	savedItemId,
+	onSave,
+	onUnsave,
+}: HotelCardProps) {
+	const [isSaved, setIsSaved] = useState(!!savedItemId);
+	const [isLoading, setIsLoading] = useState(false);
+
+	const handleToggleSave = async () => {
+		setIsLoading(true);
+		try {
+			if (isSaved && savedItemId && onUnsave) {
+				await onUnsave(savedItemId);
+				setIsSaved(false);
+			} else if (!isSaved && onSave) {
+				await onSave(hotel);
+				setIsSaved(true);
+			}
+		} catch (error) {
+			console.error("Error toggling save:", error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	return (
-		<div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+		<div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md relative">
+			{/* Save Heart Icon */}
+			<button
+				onClick={handleToggleSave}
+				disabled={isLoading}
+				className="absolute top-3 right-3 z-10 rounded-full bg-white/90 p-2 shadow-md transition-all hover:bg-white hover:scale-110 disabled:opacity-50"
+				aria-label={isSaved ? "Unsave hotel" : "Save hotel"}
+			>
+				<Heart
+					className={`h-5 w-5 transition-colors ${
+						isSaved ? "fill-red-500 text-red-500" : "text-gray-600"
+					}`}
+				/>
+			</button>
 			{/* Hotel Image */}
 			{hotel.imageUrl && (
 				<div className="aspect-video w-full overflow-hidden bg-gray-100">
