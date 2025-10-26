@@ -1,0 +1,327 @@
+/**
+ * Recommendations API Tests
+ *
+ * Tests the /api/recommendations endpoint to ensure:
+ * - Proper authentication
+ * - Valid JSON parsing from Gemini
+ * - Error handling
+ * - Correct response structure
+ */
+
+import { describe, it, expect, jest, beforeEach } from "@jest/globals";
+import { NextRequest } from "next/server";
+
+// Mocks are automatically loaded from __mocks__ directory
+jest.mock("@clerk/nextjs/server");
+jest.mock("@/db");
+jest.mock("@/env/server", () => ({
+	env: {
+		GEMINI_API_KEY: "test-api-key",
+	},
+}));
+
+// Mock fetch globally
+global.fetch = jest.fn() as jest.MockedFunction<typeof fetch>;
+
+import { auth } from "@clerk/nextjs/server";
+import { POST } from "@/app/api/recommendations/route";
+
+describe("Recommendations API", () => {
+	beforeEach(() => {
+		// Clear all mocks before each test
+		jest.clearAllMocks();
+	});
+
+	describe("Authentication", () => {
+		it("should return 401 when user is not authenticated", async () => {
+			// Mock auth to return no userId
+			(auth as jest.MockedFunction<typeof auth>).mockResolvedValue({
+				userId: null,
+			} as any);
+
+			const request = new NextRequest("http://localhost:3000/api/recommendations", {
+				method: "POST",
+				body: JSON.stringify({
+					conversationSummary: "Test summary",
+				}),
+			});
+
+			const response = await POST(request);
+			const data = await response.json();
+
+			expect(response.status).toBe(401);
+			expect(data.success).toBe(false);
+			expect(data.error).toBe("Unauthorized");
+		});
+	});
+
+	describe("Request Validation", () => {
+		it("should return 400 when conversationSummary is missing", async () => {
+			// Mock authenticated user
+			(auth as jest.MockedFunction<typeof auth>).mockResolvedValue({
+				userId: "test-user-123",
+			} as any);
+
+			const request = new NextRequest("http://localhost:3000/api/recommendations", {
+				method: "POST",
+				body: JSON.stringify({}),
+			});
+
+			const response = await POST(request);
+			const data = await response.json();
+
+			expect(response.status).toBe(400);
+			expect(data.success).toBe(false);
+			expect(data.error).toBe("Conversation summary is required");
+		});
+	});
+
+	describe("Gemini API Integration", () => {
+		it("should successfully parse valid JSON from Gemini", async () => {
+			// Mock authenticated user
+			(auth as jest.MockedFunction<typeof auth>).mockResolvedValue({
+				userId: "test-user-123",
+			} as any);
+
+			// Mock successful Gemini response with valid JSON
+			const mockRecommendations = {
+				summary: "A wonderful trip to Paris",
+				activities: [
+					{
+						id: "1",
+						title: "Eiffel Tower",
+						description: "Iconic landmark",
+						category: "Tour",
+						price: 25,
+						rating: 4.8,
+						location: "Paris",
+					},
+				],
+				hotels: [
+					{
+						id: "1",
+						name: "Budget Hotel",
+						description: "Affordable stay",
+						pricePerNight: 80,
+						rating: 4.2,
+						location: "Central Paris",
+						amenities: ["WiFi", "Breakfast"],
+					},
+				],
+				restaurants: [
+					{
+						id: "1",
+						name: "Le Café",
+						description: "Traditional French cuisine",
+						cuisine: "French",
+						priceRange: "$$",
+						rating: 4.5,
+						location: "Latin Quarter",
+					},
+				],
+			};
+
+			(global.fetch as jest.MockedFunction<typeof fetch>).mockResolvedValue({
+				ok: true,
+				json: async () => ({
+					candidates: [
+						{
+							content: {
+								parts: [
+									{
+										text: JSON.stringify(mockRecommendations),
+									},
+								],
+							},
+						},
+					],
+				}),
+			} as Response);
+
+			const request = new NextRequest("http://localhost:3000/api/recommendations", {
+				method: "POST",
+				body: JSON.stringify({
+					conversationSummary: "Student planning a trip to Paris with $1500 budget",
+				}),
+			});
+
+			const response = await POST(request);
+			const data = await response.json();
+
+			expect(response.status).toBe(200);
+			expect(data.success).toBe(true);
+			expect(data.data).toBeDefined();
+			expect(data.data.summary).toBe("A wonderful trip to Paris");
+			expect(data.data.activities).toHaveLength(1);
+			expect(data.data.hotels).toHaveLength(1);
+			expect(data.data.restaurants).toHaveLength(1);
+		});
+
+		it("should handle JSON wrapped in markdown code blocks", async () => {
+			(auth as jest.MockedFunction<typeof auth>).mockResolvedValue({
+				userId: "test-user-123",
+			} as any);
+
+			const mockData = {
+				summary: "Test trip",
+				activities: [],
+				hotels: [],
+				restaurants: [],
+			};
+
+			// Gemini sometimes wraps JSON in markdown
+			(global.fetch as jest.MockedFunction<typeof fetch>).mockResolvedValue({
+				ok: true,
+				json: async () => ({
+					candidates: [
+						{
+							content: {
+								parts: [
+									{
+										text: "```json\n" + JSON.stringify(mockData) + "\n```",
+									},
+								],
+							},
+						},
+					],
+				}),
+			} as Response);
+
+			const request = new NextRequest("http://localhost:3000/api/recommendations", {
+				method: "POST",
+				body: JSON.stringify({
+					conversationSummary: "Test",
+				}),
+			});
+
+			const response = await POST(request);
+			const data = await response.json();
+
+			expect(response.status).toBe(200);
+			expect(data.success).toBe(true);
+			expect(data.data.summary).toBe("Test trip");
+		});
+
+		it("should handle trailing commas in JSON", async () => {
+			(auth as jest.MockedFunction<typeof auth>).mockResolvedValue({
+				userId: "test-user-123",
+			} as any);
+
+			// JSON with trailing comma (invalid JSON but LLMs sometimes generate it)
+			const invalidJson = `{
+				"summary": "Test",
+				"activities": [
+					{
+						"id": "1",
+						"title": "Test",
+						"description": "Test",
+						"category": "Tour",
+						"price": 10,
+						"rating": 4.5,
+						"location": "Test",
+					}
+				],
+				"hotels": [],
+				"restaurants": []
+			}`;
+
+			(global.fetch as jest.MockedFunction<typeof fetch>).mockResolvedValue({
+				ok: true,
+				json: async () => ({
+					candidates: [
+						{
+							content: {
+								parts: [
+									{
+										text: invalidJson,
+									},
+								],
+							},
+						},
+					],
+				}),
+			} as Response);
+
+			const request = new NextRequest("http://localhost:3000/api/recommendations", {
+				method: "POST",
+				body: JSON.stringify({
+					conversationSummary: "Test",
+				}),
+			});
+
+			const response = await POST(request);
+			const data = await response.json();
+
+			// Should successfully parse after cleaning
+			expect(response.status).toBe(200);
+			expect(data.success).toBe(true);
+		});
+	});
+
+	describe("Error Handling", () => {
+		it("should handle Gemini API errors gracefully", async () => {
+			(auth as jest.MockedFunction<typeof auth>).mockResolvedValue({
+				userId: "test-user-123",
+			} as any);
+
+			// Mock Gemini API error
+			(global.fetch as jest.MockedFunction<typeof fetch>).mockResolvedValue({
+				ok: false,
+				status: 500,
+				text: async () => "Internal Server Error",
+			} as Response);
+
+			const request = new NextRequest("http://localhost:3000/api/recommendations", {
+				method: "POST",
+				body: JSON.stringify({
+					conversationSummary: "Test",
+				}),
+			});
+
+			const response = await POST(request);
+			const data = await response.json();
+
+			expect(response.status).toBe(500);
+			expect(data.success).toBe(false);
+			expect(data.error).toContain("Gemini API returned 500");
+		});
+
+		it("should handle completely invalid JSON", async () => {
+			(auth as jest.MockedFunction<typeof auth>).mockResolvedValue({
+				userId: "test-user-123",
+			} as any);
+
+			// Mock Gemini returning plain text instead of JSON
+			(global.fetch as jest.MockedFunction<typeof fetch>).mockResolvedValue({
+				ok: true,
+				json: async () => ({
+					candidates: [
+						{
+							content: {
+								parts: [
+									{
+										text: "This is just plain text, not JSON",
+									},
+								],
+							},
+						},
+					],
+				}),
+			} as Response);
+
+			const request = new NextRequest("http://localhost:3000/api/recommendations", {
+				method: "POST",
+				body: JSON.stringify({
+					conversationSummary: "Test",
+				}),
+			});
+
+			const response = await POST(request);
+			const data = await response.json();
+
+			expect(response.status).toBe(500);
+			expect(data.success).toBe(false);
+			expect(data.error).toContain("Failed to extract JSON");
+		});
+	});
+});
