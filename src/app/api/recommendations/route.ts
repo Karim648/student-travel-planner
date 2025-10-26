@@ -106,7 +106,7 @@ Please provide specific recommendations in JSON format with the following struct
 Provide 5 activities, 3 hotels (including budget options), and 3 restaurants that match the user's budget and preferences mentioned in the conversation. Use realistic prices and ratings.`;
 
 		const geminiResponse = await fetch(
-			`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${env.GEMINI_API_KEY}`,
+			`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${env.GEMINI_API_KEY}`,
 			{
 				method: "POST",
 				headers: {
