@@ -65,7 +65,9 @@ export async function POST(req: NextRequest) {
 
 Conversation Summary: "${conversationSummary}"
 
-Please provide specific recommendations in JSON format with the following structure:
+IMPORTANT: Respond with ONLY valid JSON. No markdown, no code blocks, no additional text. Just pure JSON.
+
+Please provide specific recommendations in valid JSON format with the following structure:
 {
   "summary": "A brief overview of the trip plan",
   "activities": [
@@ -87,7 +89,7 @@ Please provide specific recommendations in JSON format with the following struct
       "pricePerNight": price_in_usd,
       "rating": 4.5,
       "location": "Area/neighborhood",
-      "amenities": ["WiFi", "Breakfast", etc]
+      "amenities": ["WiFi", "Breakfast"]
     }
   ],
   "restaurants": [
@@ -103,7 +105,7 @@ Please provide specific recommendations in JSON format with the following struct
   ]
 }
 
-Provide 5 activities, 3 hotels (including budget options), and 3 restaurants that match the user's budget and preferences mentioned in the conversation. Use realistic prices and ratings.`;
+Provide 5 activities, 3 hotels (including budget options), and 3 restaurants that match the user's budget and preferences mentioned in the conversation. Use realistic prices and ratings. Ensure all JSON is valid with no trailing commas.`;
 
 		const geminiResponse = await fetch(
 			`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${env.GEMINI_API_KEY}`,
@@ -147,6 +149,11 @@ Provide 5 activities, 3 hotels (including budget options), and 3 restaurants tha
 		const generatedText =
 			geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
+		console.log(
+			"📄 Generated text from Gemini:",
+			generatedText.substring(0, 500)
+		);
+
 		// Parse the JSON from the generated text
 		// Gemini sometimes wraps JSON in markdown code blocks, so we need to extract it
 		const jsonMatch =
@@ -154,11 +161,33 @@ Provide 5 activities, 3 hotels (including budget options), and 3 restaurants tha
 			generatedText.match(/\{[\s\S]*\}/);
 
 		if (!jsonMatch) {
+			console.error("❌ No JSON found in Gemini response:", generatedText);
 			throw new Error("Failed to extract JSON from Gemini response");
 		}
 
-		const jsonText = jsonMatch[1] || jsonMatch[0];
-		const recommendations: TravelRecommendations = JSON.parse(jsonText);
+		let jsonText = jsonMatch[1] || jsonMatch[0];
+
+		// Clean up common JSON formatting issues from LLM responses
+		jsonText = jsonText
+			.replace(/,(\s*[}\]])/g, "$1") // Remove trailing commas
+			.replace(/\n/g, " ") // Replace newlines with spaces
+			.replace(/\s+/g, " ") // Collapse multiple spaces
+			.trim();
+
+		console.log("🔧 Cleaned JSON text:", jsonText.substring(0, 500));
+
+		let recommendations: TravelRecommendations;
+		try {
+			recommendations = JSON.parse(jsonText);
+		} catch (parseError) {
+			console.error("❌ JSON Parse Error:", parseError);
+			console.error("❌ Problematic JSON:", jsonText);
+			throw new Error(
+				`Failed to parse JSON: ${
+					parseError instanceof Error ? parseError.message : "Unknown error"
+				}`
+			);
+		}
 
 		return NextResponse.json<RecommendationsResponse>({
 			success: true,
