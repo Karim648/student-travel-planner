@@ -204,30 +204,138 @@ ngrok http 3000
 
 ## 🧪 Testing
 
+### Automated Tests
+
+Test structure is located in `src/app/api/__tests__/integration.test.ts`. Manual testing instructions are included in the comments.
+
 ### Create a Demo Conversation
 \`\`\`bash
+# Must be authenticated with Clerk
 curl -X POST http://localhost:3000/api/create-demo-conversation
 \`\`\`
 
-### Test Webhook Manually
+### Test Manual Conversation Save
+\`\`\`bash
+# Save a conversation manually (requires authentication)
+curl -X POST http://localhost:3000/api/conversations/end \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "conversationId": "test_123",
+    "agentId": "agent_test",
+    "summary": "User wants budget trip to Europe",
+    "status": "completed",
+    "transcript": [
+      {"role": "user", "message": "I want to travel to Paris"},
+      {"role": "agent", "message": "Great! What is your budget?"}
+    ]
+  }'
+\`\`\`
+
+### Test Recommendations API
+\`\`\`bash
+# Get recommendations (will use mock data if Gemini API fails)
+curl -X POST http://localhost:3000/api/recommendations \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "conversationSummary": "Student wants budget trip to Paris with $1500"
+  }'
+\`\`\`
+
+### Test ElevenLabs Webhook
 \`\`\`bash
 curl -X POST http://localhost:3000/api/agent/webhook \\
   -H "Content-Type: application/json" \\
   -d '{
-    "conversation_id": "test_123",
-    "agent_id": "agent_test",
-    "status": "completed",
-    "metadata": {"userId": "user_xxx"},
-    "transcript": [
-      {"role": "user", "message": "I want to travel to Paris"},
-      {"role": "agent", "message": "Great! What is your budget?"}
-    ],
-    "analysis": {
-      "sentiment": "positive",
-      "summary": "User wants to travel to Paris"
+    "type": "post_call_transcription",
+    "data": {
+      "conversation_id": "test_webhook_123",
+      "agent_id": "agent_test",
+      "status": "completed",
+      "transcript": [
+        {"role": "user", "message": "I want to travel to Paris"},
+        {"role": "agent", "message": "Great! What is your budget?"}
+      ],
+      "analysis": {
+        "sentiment": "positive",
+        "transcript_summary": "User wants to travel to Paris"
+      },
+      "conversation_initiation_client_data": {
+        "custom_llm_extra_body": {
+          "userId": "user_2xxxxxxxxxxxxx"
+        }
+      }
     }
   }'
 \`\`\`
+
+## 🐛 Troubleshooting
+
+### Conversations Not Saving
+
+**Issue**: Conversations don't appear on dashboard after ending a call.
+
+**Solution**:
+1. Check ElevenLabs webhook is configured correctly with your production URL
+2. For local testing, use ngrok: `ngrok http 3000`
+3. Update webhook URL in ElevenLabs dashboard to ngrok URL + `/api/agent/webhook`
+4. Verify userId is being passed correctly in the conversation metadata
+5. Check server logs for database insert errors
+
+**Alternative**: Use the manual save endpoint:
+\`\`\`bash
+curl -X POST http://localhost:3000/api/conversations/end \\
+  -H "Content-Type: application/json" \\
+  -d '{"conversationId":"xxx","agentId":"yyy","summary":"..."}'  
+\`\`\`
+
+### Gemini API Not Working
+
+**Issue**: Recommendations fail or return errors.
+
+**Solutions**:
+1. **Invalid Model**: Update to `gemini-1.5-flash` (fixed in latest code)
+2. **API Key**: Verify `GEMINI_API_KEY` in `.env` is valid
+3. **Fallback**: App now automatically uses mock recommendations on API failure
+4. **Rate Limits**: Gemini API has rate limits; mock data provides seamless UX
+
+### Dashboard Shows No Data
+
+**Issue**: Dashboard is empty even after creating conversations.
+
+**Solutions**:
+1. Ensure you're logged in with Clerk
+2. Check conversations are saved with YOUR userId (not "unknown")
+3. Open browser console and check for API errors
+4. Verify database has data: `pnpm db:studio` 
+5. Try creating a demo conversation: `curl -X POST http://localhost:3000/api/create-demo-conversation`
+
+### Database Errors
+
+**Issue**: Database connection or schema errors.
+
+**Solutions**:
+\`\`\`bash
+# Regenerate schema
+pnpm db:generate
+
+# Apply migrations
+pnpm db:migrate
+
+# View database
+pnpm db:studio
+\`\`\`
+
+## 🔧 Recent Bug Fixes
+
+### Fixed Issues (Latest Update)
+
+1. ✅ **Gemini API Model**: Changed from non-existent `gemini-2.5-flash` to `gemini-1.5-flash`
+2. ✅ **Mock Fallback**: Added automatic fallback to mock recommendations when Gemini API fails
+3. ✅ **Error Handling**: Improved error logging in webhook and recommendations endpoints
+4. ✅ **Manual Save**: Added `/api/conversations/end` endpoint for manual conversation saving
+5. ✅ **Status Consistency**: Changed default status from "done" to "completed" for consistency
+6. ✅ **Database Logging**: Added detailed logging for debugging conversation saves
+7. ✅ **API Key Check**: Added check for missing GEMINI_API_KEY with graceful fallback
 
 ## 📚 Available Scripts
 

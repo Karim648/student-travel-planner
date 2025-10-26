@@ -105,20 +105,27 @@ export async function POST(req: NextRequest) {
 			summary = webhookData.analysis.summary;
 		}
 
-		// Store the conversation data in the database
-		await db.insert(conversationsTable).values({
+	// Store the conversation data in the database
+	try {
+		const result = await db.insert(conversationsTable).values({
 			userId,
 			conversationId: webhookData.conversation_id,
 			agentId: webhookData.agent_id,
-			status: webhookData.status || "done",
+			status: webhookData.status || "completed",
 			transcript: webhookData.transcript || [],
 			analysis: webhookData.analysis || {},
 			summary,
-		});
+		}).returning();
 
 		console.log("✅ Conversation saved to database!");
+		console.log("Database result:", JSON.stringify(result, null, 2));
 		console.log("Conversation ID:", webhookData.conversation_id);
 		console.log("User ID:", userId);
+		console.log("Summary:", summary);
+	} catch (dbError) {
+		console.error("❌ Database insert error:", dbError);
+		throw dbError;
+	}
 
 		return NextResponse.json({ ok: true });
 	} catch (e) {
