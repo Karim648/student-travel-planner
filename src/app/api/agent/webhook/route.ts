@@ -74,11 +74,7 @@ export async function POST(req: NextRequest) {
 			console.log("Available fields in data:", Object.keys(webhookData));
 			console.log(
 				"conversation_initiation_client_data:",
-				JSON.stringify(
-					webhookData.conversation_initiation_client_data,
-					null,
-					2
-				)
+				JSON.stringify(webhookData.conversation_initiation_client_data, null, 2)
 			);
 			userId = "unknown";
 		}
