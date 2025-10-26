@@ -30,3 +30,12 @@ export const conversationsTable = pgTable("conversations", {
 	createdAt: timestamp().defaultNow().notNull(),
 	updatedAt: timestamp().defaultNow().notNull(),
 });
+
+export const savedItemsTable = pgTable("saved_items", {
+	id: integer().primaryKey().generatedAlwaysAsIdentity(),
+	userId: varchar({ length: 255 }).notNull(), // Clerk user ID
+	itemType: varchar({ length: 50 }).notNull(), // 'activity', 'hotel', 'restaurant'
+	itemData: jsonb().notNull(), // Full item data (title, description, price, etc.)
+	conversationId: varchar({ length: 255 }), // Optional: link to the conversation where it was found
+	createdAt: timestamp().defaultNow().notNull(),
+});
