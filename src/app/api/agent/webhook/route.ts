@@ -39,60 +39,86 @@ export async function POST(req: NextRequest) {
 			JSON.stringify(body, null, 2)
 		);
 
-		// The body typically contains:
-		// - conversation_id: unique ID for the conversation
-		// - agent_id: your agent ID
-		// - status: 'completed', 'failed', etc.
-		// - transcript: array of messages
-		// - metadata: any custom data you passed (including userId)
-		// - analysis: sentiment, summary, etc. (if enabled)
+		// Check if this is a post_call_transcription event
+		if (body.type !== "post_call_transcription") {
+			console.log("ℹ️ Ignoring non-transcription event:", body.type);
+			return NextResponse.json({ ok: true });
+		}
 
-		// Extract userId from multiple possible locations
-		const userId =
-			body.metadata?.userId ||
-			body.custom_llm_extra_body?.userId ||
-			body.user_id ||
-			"unknown";
-		console.log("👤 User ID from webhook:", userId);
+		// Extract the data field from webhook payload
+		const webhookData = body.data;
+		if (!webhookData) {
+			console.error("❌ No data field in webhook payload");
+			return NextResponse.json(
+				{ error: "Invalid webhook payload" },
+				{ status: 400 }
+			);
+		}
 
-		// Only save if we have a valid userId (not "unknown")
-		if (userId === "unknown") {
-			console.warn("⚠️ No userId found in webhook payload, skipping save");
-			console.log("Full payload:", JSON.stringify(body, null, 2));
-			return NextResponse.json({
-				ok: true,
-				warning: "No userId found, conversation not saved",
-			});
+		// Extract userId from conversation_initiation_client_data.custom_llm_extra_body
+		// Based on ElevenLabs webhook documentation structure
+		let userId =
+			webhookData.conversation_initiation_client_data?.custom_llm_extra_body
+				?.userId || null;
+
+		// Fallback: check other possible locations
+		if (!userId) {
+			userId =
+				webhookData.metadata?.userId ||
+				webhookData.user_id ||
+				webhookData.conversation_initiation_client_data?.dynamic_variables
+					?.userId ||
+				null;
+		}
+
+		console.log("👤 User ID from webhook:", userId || "NOT FOUND");
+
+		// If no userId, log for debugging but still save with "unknown"
+		if (!userId) {
+			console.warn("⚠️ No userId found in webhook payload");
+			console.log("Available fields in data:", Object.keys(webhookData));
+			console.log(
+				"conversation_initiation_client_data:",
+				JSON.stringify(
+					webhookData.conversation_initiation_client_data,
+					null,
+					2
+				)
+			);
+			userId = "unknown";
 		}
 
 		// Generate a human-readable summary from the transcript
 		let summary = "No summary available";
-		if (body.transcript && Array.isArray(body.transcript)) {
-			const userMessages = body.transcript
+		if (webhookData.transcript && Array.isArray(webhookData.transcript)) {
+			const userMessages = webhookData.transcript
 				.filter((msg: { role: string; message: string }) => msg.role === "user")
 				.map((msg: { role: string; message: string }) => msg.message)
 				.join(" ");
 			summary = userMessages.substring(0, 500) || "Conversation completed";
 		}
 
-		// If analysis contains a summary, use that instead
-		if (body.analysis?.summary) {
-			summary = body.analysis.summary;
+		// If analysis contains a summary, use that instead (note: it's transcript_summary in the docs)
+		if (webhookData.analysis?.transcript_summary) {
+			summary = webhookData.analysis.transcript_summary;
+		} else if (webhookData.analysis?.summary) {
+			summary = webhookData.analysis.summary;
 		}
 
 		// Store the conversation data in the database
 		await db.insert(conversationsTable).values({
 			userId,
-			conversationId: body.conversation_id,
-			agentId: body.agent_id,
-			status: body.status || "completed",
-			transcript: body.transcript || [],
-			analysis: body.analysis || {},
+			conversationId: webhookData.conversation_id,
+			agentId: webhookData.agent_id,
+			status: webhookData.status || "done",
+			transcript: webhookData.transcript || [],
+			analysis: webhookData.analysis || {},
 			summary,
 		});
 
 		console.log("✅ Conversation saved to database!");
-		console.log("Conversation ID:", body.conversation_id);
+		console.log("Conversation ID:", webhookData.conversation_id);
+		console.log("User ID:", userId);
 
 		return NextResponse.json({ ok: true });
 	} catch (e) {

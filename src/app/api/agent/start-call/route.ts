@@ -23,6 +23,7 @@ export async function POST() {
 		}
 
 		// Get a signed URL for the conversational AI agent with custom metadata
+		// Pass userId in custom_llm_extra_body which will be available in webhook payload
 		const response = await fetch(
 			`https://api.elevenlabs.io/v1/convai/conversation/get_signed_url`,
 			{
@@ -33,9 +34,11 @@ export async function POST() {
 				},
 				body: JSON.stringify({
 					agent_id: env.ELEVENLABS_AGENT_ID,
-					// Pass userId in custom_llm_extra_body so it's available in the webhook
-					custom_llm_extra_body: {
-						userId: userId,
+					// Custom data that will appear in conversation_initiation_client_data
+					overrides: {
+						custom_llm_extra_body: {
+							userId: userId,
+						},
 					},
 				}),
 			}
