@@ -12,9 +12,9 @@ import {
 	AlertCircle,
 	Heart,
 	ListFilter,
-	MessageSquarePlus,
-	LayoutDashboard,
+	SlidersHorizontal,
 } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
 
 interface SavedItem {
 	id: number;
@@ -109,33 +109,15 @@ export default function SavedItemsPage() {
 					<div className="mb-4 flex flex-wrap items-center justify-between gap-4">
 						<div>
 							<div className="flex items-center gap-3">
-								<Heart className="h-8 w-8 fill-red-500 text-red-500" />
-								<h1 className="text-4xl font-bold text-gray-900">
-									Saved Items
-								</h1>
-							</div>
-							<p className="mt-2 text-gray-600">
-								Your favorite activities, hotels, and restaurants
+									<Heart className="h-8 w-8 text-black stroke-[1.5]" />
+									<h1 className="text-4xl font-bold text-[#0B0B0B]">Saved</h1>
+								</div>
+							<p className="mt-2 text-[#626772]">
+								Your favourite activities, hotels, eats, and hidden gems.
 							</p>
 						</div>
-						<div className="flex gap-3">
-							<Button
-								onClick={() => router.push("/dashboard")}
-								variant="outline"
-								size="lg"
-							>
-								<LayoutDashboard className="mr-2 h-4 w-4" />
-								Dashboard
-							</Button>
-							<Button
-								onClick={() => router.push("/conversation")}
-								size="lg"
-								className="bg-blue-600 hover:bg-blue-700"
-							>
-								<MessageSquarePlus className="mr-2 h-4 w-4" />
-								New Chat
-							</Button>
-						</div>
+
+						{/* Profile button removed per design request */}
 					</div>
 
 					{/* Stats */}
@@ -166,38 +148,42 @@ export default function SavedItemsPage() {
 						</div>
 					</div>
 
-					{/* Filters */}
-					<div className="mt-6 flex items-center gap-3">
-						<ListFilter className="h-5 w-5 text-gray-600" />
-						<div className="flex gap-2">
-							<Button
-								variant={filter === "all" ? "default" : "outline"}
-								onClick={() => setFilter("all")}
-								size="sm"
+					{/* Filters - Experience chips */}
+					<div className="mt-6">
+						<div className="flex items-center gap-3">
+							<button
+								aria-label="Filters"
+								className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-[#DDF95C]"
 							>
-								All ({stats.total})
-							</Button>
-							<Button
-								variant={filter === "activity" ? "default" : "outline"}
-								onClick={() => setFilter("activity")}
-								size="sm"
-							>
-								Activities ({stats.activities})
-							</Button>
-							<Button
-								variant={filter === "hotel" ? "default" : "outline"}
-								onClick={() => setFilter("hotel")}
-								size="sm"
-							>
-								Hotels ({stats.hotels})
-							</Button>
-							<Button
-								variant={filter === "restaurant" ? "default" : "outline"}
-								onClick={() => setFilter("restaurant")}
-								size="sm"
-							>
-								Restaurants ({stats.restaurants})
-							</Button>
+								<SlidersHorizontal className="h-4 w-4 text-black" />
+							</button>
+
+							<div className="ml-2 text-sm font-medium text-[#0B0B0B]">Experience</div>
+						</div>
+
+						<div className="mt-3 flex flex-wrap items-center gap-2">
+							{[
+								{ key: "all", label: `All (${stats.total})`, map: "all" },
+								{ key: "eats", label: `Eats (${stats.restaurants})`, map: "restaurant" },
+								{ key: "drinks", label: "Drinks", map: "restaurant" },
+								{ key: "nature", label: "Nature", map: "activity" },
+								{ key: "workshops", label: "Workshops", map: "activity" },
+								{ key: "music", label: "Music", map: "activity" },
+								{ key: "sports", label: "Sports", map: "activity" },
+								{ key: "culture", label: "Culture", map: "activity" },
+							].map((chip) => (
+								<button
+									key={chip.key}
+									onClick={() => setFilter(chip.map as any)}
+									className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+										(filter === (chip.map as any) || (chip.map === "all" && filter === "all"))
+											? "bg-[#DDF95C] text-black"
+											: "bg-white border border-gray-200 text-[#626772]"
+									}`}
+								>
+									<span>{chip.label}</span>
+								</button>
+							))}
 						</div>
 					</div>
 				</div>
@@ -206,7 +192,7 @@ export default function SavedItemsPage() {
 				{loading && (
 					<div className="flex items-center justify-center py-12">
 						<div className="flex flex-col items-center gap-4">
-							<Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+									<Loader2 className="h-12 w-12 animate-spin text-[#DDF95C]" />
 							<p className="text-lg text-gray-600">
 								Loading your saved items...
 							</p>
@@ -286,6 +272,20 @@ export default function SavedItemsPage() {
 						})}
 					</div>
 				)}
+
+				{/* Floating Action Button */}
+				<button
+					aria-label="Start new chat"
+					onClick={() => router.push("/conversation")}
+					className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 inline-flex h-[120px] w-[120px] items-center justify-center rounded-full bg-[#DDF95C] shadow-lg ring-2 ring-black"
+				>
+					{/* Try to use image if exists, otherwise SVG fallback */}
+					{/* eslint-disable-next-line @next/next/no-img-element */}
+					<img src="/chat-fab.png" alt="Start chat" className="h-16 w-16 object-contain" onError={(e)=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1.5" className="h-16 w-16">
+						<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+					</svg>
+				</button>
 			</div>
 		</div>
 	);
