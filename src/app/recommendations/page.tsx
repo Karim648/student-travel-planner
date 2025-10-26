@@ -9,6 +9,9 @@ import { RestaurantCard } from "@/components/RestaurantCard";
 import type {
 	TravelRecommendations,
 	RecommendationsResponse,
+	Activity,
+	Hotel,
+	Restaurant,
 } from "@/types/recommendations";
 import { Loader2, AlertCircle, Home } from "lucide-react";
 
@@ -27,6 +30,67 @@ function RecommendationsContent() {
 	// Get params from URL
 	const conversationId = searchParams.get("conversationId");
 	const summaryParam = searchParams.get("summary");
+
+	/**
+	 * Save an item to the user's saved list
+	 */
+	const handleSaveItem = async (
+		itemType: "activity" | "hotel" | "restaurant",
+		itemData: Activity | Hotel | Restaurant
+	) => {
+		try {
+			const response = await fetch("/api/saved-items", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					itemType,
+					itemData,
+					conversationId: conversationId || undefined,
+				}),
+			});
+
+			const data = await response.json();
+
+			if (!data.success) {
+				throw new Error(data.error || "Failed to save item");
+			}
+
+			console.log("✅ Item saved successfully");
+		} catch (err) {
+			console.error("Error saving item:", err);
+			throw err;
+		}
+	};
+
+	/**
+	 * Remove an item from the user's saved list
+	 */
+	const handleUnsaveItem = async (savedItemId: number) => {
+		try {
+			const response = await fetch("/api/saved-items", {
+				method: "DELETE",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					id: savedItemId,
+				}),
+			});
+
+			const data = await response.json();
+
+			if (!data.success) {
+				throw new Error(data.error || "Failed to remove item");
+			}
+
+			console.log("✅ Item removed successfully");
+		} catch (err) {
+			console.error("Error removing item:", err);
+			throw err;
+		}
+	};
 
 	/**
 	 * Fetch recommendations from our API
@@ -172,7 +236,14 @@ function RecommendationsContent() {
 									</h2>
 									<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 										{recommendations.activities.map((activity) => (
-											<ActivityCard key={activity.id} activity={activity} />
+											<ActivityCard
+												key={activity.id}
+												activity={activity}
+												onSave={async (item) =>
+													handleSaveItem("activity", item)
+												}
+												onUnsave={handleUnsaveItem}
+											/>
 										))}
 									</div>
 								</div>
@@ -189,7 +260,12 @@ function RecommendationsContent() {
 								</h2>
 								<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 									{recommendations.hotels.map((hotel) => (
-										<HotelCard key={hotel.id} hotel={hotel} />
+										<HotelCard
+											key={hotel.id}
+											hotel={hotel}
+											onSave={async (item) => handleSaveItem("hotel", item)}
+											onUnsave={handleUnsaveItem}
+										/>
 									))}
 								</div>
 							</div>
@@ -210,6 +286,10 @@ function RecommendationsContent() {
 											<RestaurantCard
 												key={restaurant.id}
 												restaurant={restaurant}
+												onSave={async (item) =>
+													handleSaveItem("restaurant", item)
+												}
+												onUnsave={handleUnsaveItem}
 											/>
 										))}
 									</div>
