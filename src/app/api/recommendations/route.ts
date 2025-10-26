@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
 		// Parse the request body
 		const body: RecommendationsRequest = await req.json();
-		const { conversationSummary, conversationId } = body;
+		const { conversationSummary } = body;
 
 		if (!conversationSummary) {
 			return NextResponse.json(
@@ -177,91 +177,4 @@ Provide 5 activities, 3 hotels (including budget options), and 3 restaurants tha
 			{ status: 500 }
 		);
 	}
-}
-
-/**
- * Mock data generator for development/testing
- * Remove or keep as fallback if Snowflake API is not available
- */
-function getMockRecommendations(summary: string): TravelRecommendations {
-	// Extract destination from summary (simple heuristic)
-	const destination =
-		summary.match(/\b(Paris|London|Rome|Tokyo|New York)\b/i)?.[0] || "Paris";
-
-	return {
-		activities: [
-			{
-				id: "act_1",
-				title: `${destination} Walking Tour`,
-				description: `Explore the historic streets of ${destination} with a local guide`,
-				category: "Tour",
-				price: 45,
-				rating: 4.8,
-				location: destination,
-				imageUrl:
-					"https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400",
-			},
-			{
-				id: "act_2",
-				title: "Museum Visit",
-				description: "Visit world-renowned museums and galleries",
-				category: "Culture",
-				price: 25,
-				rating: 4.9,
-				location: destination,
-				imageUrl:
-					"https://images.unsplash.com/photo-1564399579883-451a5d44ec08?w=400",
-			},
-			{
-				id: "act_3",
-				title: "Food Tour",
-				description: "Taste local delicacies and hidden culinary gems",
-				category: "Food",
-				price: 65,
-				rating: 4.7,
-				location: destination,
-				imageUrl:
-					"https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400",
-			},
-		],
-		hotels: [
-			{
-				id: "hotel_1",
-				name: `${destination} City Hotel`,
-				description:
-					"Modern hotel in the heart of the city with great amenities",
-				pricePerNight: 120,
-				rating: 4.5,
-				location: `Central ${destination}`,
-				amenities: ["Free WiFi", "Breakfast included", "Gym"],
-				imageUrl:
-					"https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400",
-			},
-			{
-				id: "hotel_2",
-				name: "Budget Hostel",
-				description: "Clean and comfortable budget accommodation for travelers",
-				pricePerNight: 35,
-				rating: 4.2,
-				location: destination,
-				amenities: ["Free WiFi", "Shared kitchen"],
-				imageUrl:
-					"https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=400",
-			},
-		],
-		restaurants: [
-			{
-				id: "rest_1",
-				name: "Local Bistro",
-				description: "Authentic local cuisine in a cozy atmosphere",
-				cuisine: "Local",
-				priceRange: "$$",
-				rating: 4.6,
-				location: destination,
-				imageUrl:
-					"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400",
-			},
-		],
-		summary: `Based on your conversation, here are personalized recommendations for your trip to ${destination}`,
-	};
 }
